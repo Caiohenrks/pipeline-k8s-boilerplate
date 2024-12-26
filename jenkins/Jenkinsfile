@@ -24,6 +24,9 @@ pipeline {
                 command:
                 - cat
                 tty: true
+                volumeMounts:
+                - name: docker-sock
+                  mountPath: /var/run/docker.sock
               - name: git
                 image: alpine/git:latest
                 command:
@@ -80,6 +83,20 @@ pipeline {
                 }
             }
         }
+        stage('Security Image Scan') {
+            steps {
+                container('trivy') {
+                    script {
+                        sh """
+                        trivy image \
+                            --exit-code 1 \
+                            --severity HIGH,CRITICAL \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        """
+                    }
+                }
+            }
+        }
         stage('Push Docker Image') {
             steps {
                 container('docker-build') {
@@ -87,20 +104,6 @@ pipeline {
                         docker.withRegistry('', 'dockerhub-credentials') {
                             sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
                         }
-                    }
-                }
-            }
-        }
-        stage('Security Image Scan') {
-            steps {
-                container('trivy') {
-                    script {
-                        sh """
-                        trivy image \
-                            --exit-code 0 \
-                            --severity HIGH,CRITICAL \
-                            ${DOCKER_IMAGE}:${DOCKER_TAG}
-                        """
                     }
                 }
             }
