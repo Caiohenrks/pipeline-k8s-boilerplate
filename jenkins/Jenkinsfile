@@ -136,7 +136,7 @@ pipeline {
                 container('newman') {
                     script {
                         sh """
-                        newman run /workspace/postman/${JOB_NAME.toLowerCase()}.json \
+                        newman run /workspace/newman/${JOB_NAME.toLowerCase()}.json \
                             -r htmlextra \
                             --reporter-htmlextra-export /workspace/newman-report.html
                         """
