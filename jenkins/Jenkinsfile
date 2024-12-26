@@ -95,7 +95,6 @@ pipeline {
             steps {
                 container('trivy') {
                     script {
-                        // Realizar o scan de imagem sem template
                         sh """
                         trivy image \
                             --exit-code 0 \
