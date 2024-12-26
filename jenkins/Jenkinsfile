@@ -19,12 +19,16 @@ pipeline {
                 volumeMounts:
                 - name: docker-sock
                   mountPath: /var/run/docker.sock
+                - name: workspace
+                  mountPath: /workspace
               - name: trivy
                 image: aquasec/trivy:latest
                 command:
                 - cat
                 tty: true
                 volumeMounts:
+                - name: docker-sock
+                  mountPath: /var/run/docker.sock
                 - name: workspace
                   mountPath: /workspace
               - name: newman
