@@ -31,6 +31,7 @@ pipeline {
         KUBERNETES_DEPLOYMENT = "python-crud-deployment"
         KUBERNETES_NAMESPACE = "default"
     }
+    
 
     stages {
         stage('Build Docker Image') {
@@ -60,7 +61,7 @@ pipeline {
                 container('docker') {
                     script {
                         sh """
-                        sed -i 's|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|' ${DEPLOYMENT_FILE}
+                        sed -i 's|image: .*|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|' ${DEPLOYMENT_FILE}
                         """
                     }
                 }
@@ -83,12 +84,6 @@ pipeline {
                     }
                 }
             }
-        }
-    }
-
-    post {
-        always {
-            cleanWs()
         }
     }
 }
