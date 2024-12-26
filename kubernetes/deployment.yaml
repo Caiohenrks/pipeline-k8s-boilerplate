@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: python-crud-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: python-crud
+  template:
+    metadata:
+      labels:
+        app: python-crud
+    spec:
+      containers:
+      - name: python-crud
+        image: python-crud:latest
+        ports:
+        - containerPort: 5000

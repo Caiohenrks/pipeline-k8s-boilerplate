@@ -1,0 +1,64 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = "python-crud"
+        DOCKER_TAG = "${env.BUILD_NUMBER}"
+        DEPLOYMENT_FILE = "kubernetes/deployment.yaml"
+        GIT_REPO = "https://your-git-repo-url.git"
+        GIT_BRANCH = "main"
+        KUBERNETES_DEPLOYMENT = "python-crud-deployment"
+        KUBERNETES_NAMESPACE = "default"
+    }
+
+    stages {
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    docker.build("${DOCKER_IMAGE}:${DOCKER_TAG}")
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    docker.withRegistry('', 'dockerhub-credentials') {
+                        docker.image("${DOCKER_IMAGE}:${DOCKER_TAG}").push()
+                    }
+                }
+            }
+        }
+
+        stage('Update Deployment YAML') {
+            steps {
+                script {
+                    sh """
+                    sed -i 's|image: ${DOCKER_IMAGE}:.*|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|' ${DEPLOYMENT_FILE}
+                    """
+                }
+            }
+        }
+
+        stage('Commit and Push Changes') {
+            steps {
+                script {
+                    sh """
+                    git config --global user.email "jenkins@example.com"
+                    git config --global user.name "Jenkins"
+                    git checkout ${GIT_BRANCH}
+                    git add ${DEPLOYMENT_FILE}
+                    git commit -m "Update deployment image to ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    git push origin ${GIT_BRANCH}
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
