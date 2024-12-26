@@ -34,27 +34,29 @@ pipeline {
     stages {
         stage('Code Quality Analysis') {
             steps {
-                script {
-                    withCredentials([string(credentialsId: 'SONARQUBE', variable: 'SONARQUBE')]) {
-                        sh """
-                            docker run \
-                            --rm \
-                            -e SONAR_HOST_URL="https://sonarcloud.io/" \
-                            -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=${JOB_NAME} -Dsonar.organization=\"caiohenrks\" -Dsonar.languages=python -Dsonar.projectVersion=V${BUILD_NUMBER}" \
-                            -e SONAR_TOKEN="${SONARQUBE}" \
-                            -v "." \
-                            sonarsource/sonar-scanner-cli
-                        """
-                        sleep 15
-                        
-                        def qualityGate = sh(script: "curl -k -u ${SONARQUBE}: https://sonarcloud.io/api/qualitygates/project_status?projectKey=${JOB_NAME}", returnStdout: true).trim()
-                        echo "Quality Gate JSON: ${qualityGate}"
-                        
-                        def status = new groovy.json.JsonSlurper().parseText(qualityGate).projectStatus.status
-                        echo "SonarQube Quality Gate Status: ${status}"
-                        
-                        if (status != 'OK') {
-                            error "Qualidade do código não atingiu o nível esperado: ${status}"
+                container('docker') {
+                    script {
+                        withCredentials([string(credentialsId: 'SONARQUBE', variable: 'SONARQUBE')]) {
+                            sh """
+                                docker run \
+                                --rm \
+                                -e SONAR_HOST_URL="https://sonarcloud.io/" \
+                                -e SONAR_SCANNER_OPTS="-Dsonar.projectKey=${JOB_NAME} -Dsonar.organization=\"caiohenrks\" -Dsonar.languages=python -Dsonar.projectVersion=V${BUILD_NUMBER}" \
+                                -e SONAR_TOKEN="${SONARQUBE}" \
+                                -v "." \
+                                sonarsource/sonar-scanner-cli
+                            """
+                            sleep 15
+                            
+                            def qualityGate = sh(script: "curl -k -u ${SONARQUBE}: https://sonarcloud.io/api/qualitygates/project_status?projectKey=${JOB_NAME}", returnStdout: true).trim()
+                            echo "Quality Gate JSON: ${qualityGate}"
+                            
+                            def status = new groovy.json.JsonSlurper().parseText(qualityGate).projectStatus.status
+                            echo "SonarQube Quality Gate Status: ${status}"
+                            
+                            if (status != 'OK') {
+                                error "Qualidade do código não atingiu o nível esperado: ${status}"
+                            }
                         }
                     }
                 }
