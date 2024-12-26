@@ -25,8 +25,8 @@ pipeline {
                 - cat
                 tty: true
                 volumeMounts:
-                - name: docker-sock
-                  mountPath: /var/run/docker.sock
+                - name: workspace
+                  mountPath: /workspace
               - name: newman
                 image: postman/newman_alpine33
                 command:
@@ -69,19 +69,17 @@ pipeline {
             steps {
                 container('trivy') {
                     script {
+                        sh 'curl -L -o /workspace/html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
                         sh """
-                        trivy image \
-                            --exit-code 0 \
-                            --severity HIGH,CRITICAL \
-                            --format html \
-                            --output /workspace/trivy-report.html \
-                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        trivy image --exit-code 0 --severity HIGH,CRITICAL \
+                        --format template --template @/workspace/html.tpl \
+                        --output /workspace/trivy-report.html ${DOCKER_IMAGE}:${DOCKER_TAG}
                         """
                     }
                 }
             }
         }
-        
+
         stage('Smoke Test') {
             steps {
                 container('newman') {
