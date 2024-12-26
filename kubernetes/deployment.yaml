@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: python-crud
-        image: caiohenrks/python-crud:18
+        image: caiohenrks/python-crud:19
         ports:
         - containerPort: 5000
