@@ -6,8 +6,8 @@ pipeline {
             kind: Pod
             spec:
               containers:
-              - name: docker
-                image: docker:latest
+              - name: ci-cd-toolkit
+                image: caiohenrks/ci-cd-toolkit
                 command:
                 - cat
                 tty: true
