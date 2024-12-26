@@ -63,18 +63,65 @@ pipeline {
         ARTIFACTS_DIR = "artifacts"
     }
     stages {
-        // ... Outras etapas aqui
+        stage('Code Quality Analysis') {
+            steps {
+                container('sonar-scanner') {
+                    script {
+                        withCredentials([string(credentialsId: 'SONARQUBE', variable: 'SONARQUBE')]) {
+                            sh """
+                                sonar-scanner \
+                                -Dsonar.projectKey=${JOB_NAME} \
+                                -Dsonar.organization=caiohenrks \
+                                -Dsonar.projectVersion=V${BUILD_NUMBER} \
+                                -Dsonar.host.url=https://sonarcloud.io/ \
+                                -Dsonar.login=${SONARQUBE}
+                            """
+                            sleep 15
+                            def qualityGate = sh(script: "curl -k -u ${SONARQUBE}: https://sonarcloud.io/api/qualitygates/project_status?projectKey=${JOB_NAME}", returnStdout: true).trim()
+                            echo "Quality Gate JSON: ${qualityGate}"
+                            def status = new groovy.json.JsonSlurper().parseText(qualityGate).projectStatus.status
+                            if (status != 'OK') {
+                                error "Qualidade do código não atingiu o nível esperado: ${status}"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                container('docker-build') {
+                    script {
+                        sh "docker build -t ${DOCKER_IMAGE}:${DOCKER_TAG} ."
+                    }
+                }
+            }
+        }
 
         stage('Security Image Scan') {
             steps {
                 container('trivy') {
                     script {
+                        sh "apt install curl -y"
                         sh 'curl -L -o /workspace/html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl'
                         sh """
                         trivy image --exit-code 0 --severity HIGH,CRITICAL \
                         --format template --template @/workspace/html.tpl \
                         --output /workspace/trivy-report.html ${DOCKER_IMAGE}:${DOCKER_TAG}
                         """
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                container('docker-build') {
+                    script {
+                        docker.withRegistry('', 'dockerhub-credentials') {
+                            sh "docker push ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                        }
                     }
                 }
             }
@@ -93,7 +140,37 @@ pipeline {
                 }
             }
         }
-        
+
+        stage('Update Deployment YAML') {
+            steps {
+                container('docker-build') {
+                    script {
+                        sh "sed -i \"s|image: .*|image: ${DOCKER_IMAGE}:${DOCKER_TAG}|\" ${DEPLOYMENT_FILE}"
+                    }
+                }
+            }
+        }
+
+        stage('Commit and Push Changes') {
+            steps {
+                container('git') {
+                    script {
+                        withCredentials([string(credentialsId: 'github-token', variable: 'GITHUB_TOKEN')]) {
+                            sh """
+                            git config --global --add safe.directory /home/jenkins/agent/workspace/${JOB_NAME}
+                            git config --global user.email \"jenkins@example.com\"
+                            git config --global user.name \"Jenkins\"
+                            git checkout ${GIT_BRANCH}
+                            git add ${DEPLOYMENT_FILE}
+                            git commit -m \"Update deployment image to ${DOCKER_IMAGE}:${DOCKER_TAG}\"
+                            git push https://${GITHUB_TOKEN}@github.com/Caiohenrks/pipeline-k8s-boilerplate.git ${GIT_BRANCH}
+                            """
+                        }
+                    }
+                }
+            }
+        }
+
         stage('Collect and Archive Evidence') {
             steps {
                 container('docker-build') {
