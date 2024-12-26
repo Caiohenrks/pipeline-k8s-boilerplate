@@ -36,7 +36,6 @@ pipeline {
             """
         }
     }
-
     environment {
         DOCKER_IMAGE = "caiohenrks/python-crud"
         DOCKER_TAG = "${env.BUILD_NUMBER}"
@@ -72,7 +71,6 @@ pipeline {
                 }
             }
         }
-
         stage('Build Docker Image') {
             steps {
                 container('docker-build') {
@@ -93,17 +91,21 @@ pipeline {
                 }
             }
         }
-
         stage('Security Image Scan') {
             steps {
                 container('trivy') {
-                    sh "apk add --no-cache curl"
-                    sh "curl -L -o html.tpl https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/html.tpl"
-                    sh "trivy image --exit-code 0 --severity HIGH,CRITICAL --format template --template @html.tpl --output trivy-report.html ${DOCKER_IMAGE}:${DOCKER_TAG}"
+                    script {
+                        // Realizar o scan de imagem sem template
+                        sh """
+                        trivy image \
+                            --exit-code 0 \
+                            --severity HIGH,CRITICAL \
+                            ${DOCKER_IMAGE}:${DOCKER_TAG}
+                        """
+                    }
                 }
             }
         }
-
         stage('Update Deployment YAML') {
             steps {
                 container('docker-build') {
@@ -113,7 +115,6 @@ pipeline {
                 }
             }
         }
-
         stage('Commit and Push Changes') {
             steps {
                 container('git') {
