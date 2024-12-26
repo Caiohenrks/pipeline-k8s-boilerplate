@@ -72,6 +72,7 @@ pipeline {
                 container('docker') {
                     script {
                         sh """
+                        git config --global --add safe.directory /home/jenkins/agent/workspace/PIPELINE-NGINX
                         git config --global user.email "jenkins@example.com"
                         git config --global user.name "Jenkins"
                         git checkout ${GIT_BRANCH}
