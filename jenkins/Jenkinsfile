@@ -23,7 +23,7 @@ pipeline {
     }
 
     environment {
-        DOCKER_IMAGE = "python-crud"
+        DOCKER_IMAGE = "caiohenrks/python-crud"
         DOCKER_TAG = "${env.BUILD_NUMBER}"
         DEPLOYMENT_FILE = "kubernetes/deployment.yaml"
         GIT_REPO = "https://github.com/Caiohenrks/pipeline-k8s-boilerplate.git"
