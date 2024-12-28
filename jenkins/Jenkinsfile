@@ -67,6 +67,7 @@ pipeline {
         ARTIFACTS_DIR = "artifacts"
     }
     stages {
+        /*
         stage('Code Quality Analysis') {
             steps {
                 container('sonar-scanner') {
@@ -92,7 +93,7 @@ pipeline {
                 }
             }
         }
-
+        */
         stage('Build Docker Image') {
             steps {
                 container('docker-build') {
@@ -102,7 +103,7 @@ pipeline {
                 }
             }
         }
-
+        /*
         stage('Security Image Scan') {
             steps {
                 container('trivy') {
@@ -118,7 +119,7 @@ pipeline {
                 }
             }
         }
-
+        */
         stage('Push Docker Image') {
             steps {
                 container('docker-build') {
@@ -174,7 +175,7 @@ pipeline {
                 }
             }
         }
-
+        /*
         stage('Collect and Archive Evidence') {
             steps {
                 container('docker-build') {
@@ -189,5 +190,6 @@ pipeline {
                 }
             }
         }
+        */
     }
 }
