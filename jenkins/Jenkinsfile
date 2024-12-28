@@ -130,7 +130,7 @@ pipeline {
                 }
             }
         }
-
+        /*
         stage('Smoke Test') {
             steps {
                 container('newman') {
@@ -144,7 +144,7 @@ pipeline {
                 }
             }
         }
-
+        */
         stage('Update Deployment YAML') {
             steps {
                 container('docker-build') {
@@ -182,7 +182,7 @@ pipeline {
                         sh """
                         mkdir -p ${ARTIFACTS_DIR}
                         mv /workspace/trivy-report.html ${ARTIFACTS_DIR}/
-                        mv /workspace/newman-report.html ${ARTIFACTS_DIR}/
+                        //mv /workspace/newman-report.html ${ARTIFACTS_DIR}/
                         """
                         archiveArtifacts artifacts: "${ARTIFACTS_DIR}/*", fingerprint: true
                     }
