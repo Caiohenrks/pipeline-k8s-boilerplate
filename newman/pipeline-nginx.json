@@ -1,14 +1,12 @@
-
 {
   "info": {
-    "name": "Flask API Collection",
-    "_postman_id": "12345678-abcd-1234-abcd-1234567890ab",
-    "description": "Collection for testing Flask API",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+    "name": "API Gerenciamento de Usuários e Endereços",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "description": "Coleção Postman para testar a API RESTful de gerenciamento de usuários e endereços."
   },
   "item": [
     {
-      "name": "Create Item",
+      "name": "Criar Usuário",
       "request": {
         "method": "POST",
         "header": [
@@ -17,49 +15,36 @@
             "value": "application/json"
           }
         ],
+        "url": {
+          "raw": "http://localhost:5000/usuarios",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["usuarios"]
+        },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Sample Item\",\n  \"description\": \"This is a sample description\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5000/items",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["items"]
+          "raw": "{\n  \"nome\": \"João Silva\",\n  \"email\": \"joao.silva@example.com\",\n  \"cep\": \"01001000\"\n}"
         }
-      }
+      },
+      "response": []
     },
     {
-      "name": "Get All Items",
+      "name": "Obter Usuário",
       "request": {
         "method": "GET",
-        "header": [],
         "url": {
-          "raw": "http://localhost:5000/items",
+          "raw": "http://localhost:5000/usuarios/:id",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5000",
-          "path": ["items"]
+          "path": ["usuarios", ":id"]
         }
-      }
+      },
+      "response": []
     },
     {
-      "name": "Get Item by ID",
-      "request": {
-        "method": "GET",
-        "header": [],
-        "url": {
-          "raw": "http://localhost:5000/items/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["items", "1"]
-        }
-      }
-    },
-    {
-      "name": "Update Item",
+      "name": "Atualizar Usuário",
       "request": {
         "method": "PUT",
         "header": [
@@ -68,32 +53,33 @@
             "value": "application/json"
           }
         ],
+        "url": {
+          "raw": "http://localhost:5000/usuarios/:id",
+          "protocol": "http",
+          "host": ["localhost"],
+          "port": "5000",
+          "path": ["usuarios", ":id"]
+        },
         "body": {
           "mode": "raw",
-          "raw": "{\n  \"name\": \"Updated Item\",\n  \"description\": \"Updated description\"\n}"
-        },
-        "url": {
-          "raw": "http://localhost:5000/items/1",
-          "protocol": "http",
-          "host": ["localhost"],
-          "port": "5000",
-          "path": ["items", "1"]
+          "raw": "{\n  \"nome\": \"João Silva Atualizado\",\n  \"email\": \"joao.silva.updated@example.com\",\n  \"status\": \"inativo\"\n}"
         }
-      }
+      },
+      "response": []
     },
     {
-      "name": "Delete Item",
+      "name": "Deletar Usuário",
       "request": {
         "method": "DELETE",
-        "header": [],
         "url": {
-          "raw": "http://localhost:5000/items/1",
+          "raw": "http://localhost:5000/usuarios/:id",
           "protocol": "http",
           "host": ["localhost"],
           "port": "5000",
-          "path": ["items", "1"]
+          "path": ["usuarios", ":id"]
         }
-      }
+      },
+      "response": []
     }
   ]
 }
